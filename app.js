@@ -12,10 +12,12 @@ app.use(bodyParser.json()) //req.body객체 인식
 app.use('/api',indexRouter)
 
 const mongoURI = process.env.LOCAL_DB_ADDRESS
-mongoose.connect(mongoURI, { useNewUrlParser: true })
-.then(()=>console.log('mongoose connected'))
-.catch((error)=>console.log('db connection fail',error))
-
+const MongoConnect = async () => {
+    await mongoose.connect(mongoURI, { useNewUrlParser: true })
+    .then(()=>console.log('mongoose connected'))
+    .catch((error)=>console.log('db connection fail',error))
+}
+MongoConnect()
 app.listen(process.env.PORT || 5001, ()=>{
     console.log('server on 5001')
 })
