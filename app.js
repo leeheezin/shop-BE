@@ -13,10 +13,13 @@ app.use('/api',indexRouter)
 
 const mongoURI = process.env.LOCAL_DB_ADDRESS
 const MongoConnect = async () => {
-    await mongoose.connect(mongoURI, { useNewUrlParser: true })
-    .then(()=>console.log('mongoose connected'))
-    .catch((error)=>console.log('db connection fail',error))
-}
+    try {
+        await mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true });
+        console.log('Mongoose connected');
+        } catch (error) {
+        console.error('DB connection failed:', error);
+        }
+    };
 MongoConnect()
 app.listen(process.env.PORT || 5001, ()=>{
     console.log('server on 5001')
