@@ -1,7 +1,7 @@
 const User = require("../model/User")
 const bcrypt = require('bcryptjs')
-
 const userController = {}
+
 userController.createUser = async (req,res) =>{
     try {
         const {email, password, name, level} = req.body
@@ -10,10 +10,10 @@ userController.createUser = async (req,res) =>{
             throw new Error('User already exist')
         }
         const salt = bcrypt.genSaltSync(10)
-        password = bcrypt.hash(password,salt)
-        const newUser = new User({email,password,name,level:level?level:'customer'})
+        const hash = bcrypt.hashSync(password,salt)
+        const newUser = new User({email,password:hash,name,level:level?level:'customer'})
         await newUser.save()
-        return res.status(200).json({status: 'success'})
+        res.status(200).json({status: 'success'})
     } catch (error) {
         res.status(400).json({status: 'fail',error: error.message})
     }
