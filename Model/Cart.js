@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
-const User = require('./User')
 const Product = require('./Product')
+const User = require('./User')
 const Schema = mongoose.Schema
 const cartSchema = Schema({
     userId:{type: mongoose.ObjectId, ref:User},
