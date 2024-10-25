@@ -18,4 +18,32 @@ userController.createUser = async (req,res) =>{
         res.status(400).json({status: 'fail',error: error.message})
     }
 }
+userController.loginUser = async (req,res) => {
+    try {
+        const {email, password} = req.body
+        const user = await User.findOne({email})
+        if(user) {
+            const pwMath = bcrypt.compareSync(password, user.password)
+            if(pwMath){
+                const token = user.generateToken()
+                return res.status(200).json({status: 'login success', user, token})
+            }
+        }
+        throw new Error('이메일 또는 패스워드가 일치하지 않습니다.')
+    } catch (error) {
+        res.status(400).json({status: 'login fail', message: error.message})
+    }
+}
+userController.getUser= async (req,res)=>{
+    try {
+        const {userId} = req 
+        const user = await User.findById(userId)
+        if(!user){
+            throw new Error("can not find user")
+        }
+        res.status(200).json({status:"success", user})
+    } catch (error) {
+        res.status(400).json({status:"fail", message: error.message})
+    }
+}
 module.exports = userController
