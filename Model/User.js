@@ -4,10 +4,10 @@ const jwt = require('jsonwebtoken')
 require('dotenv').config()
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY
 const userSchema = Schema({
-    email:{type:String, required: true, unique:true},
+    email:{type:String, required: true, unique:true, lowercase: true, trim: true},
     password:{type:String, required: true},
     name:{type:String, required:true},
-    level: {type:String, default:"customer"}// customoer, admin
+    level: {type:String, default:"customer", enum:["customer","admin"], required:true}// customoer, admin
 },{timestamps:true})
 userSchema.methods.toJSON = function() {
     const obj = this._doc
