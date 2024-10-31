@@ -1,6 +1,6 @@
 const { response } = require("express")
 const Product = require("../model/Product")
-const PAGE_SIZE=1
+const PAGE_SIZE=3
 const productController = {}
 productController.createProduct = async (req,res) => {
     try {
@@ -16,7 +16,7 @@ productController.getProducts = async (req,res) => {
     try {
         const {page,name} = req.query
         const cond = name?{name:{$regex:name,$options:'i'}}:{}
-        let query = Product.find(cond)
+        let query = Product.find(cond).sort({createdAt: -1})
         if(page){
             query.skip((page-1)*PAGE_SIZE).limit(PAGE_SIZE)
             //최종 몇개 페이지
