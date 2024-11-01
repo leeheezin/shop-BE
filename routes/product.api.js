@@ -10,6 +10,7 @@ router.post(
     productController.createProduct
     );
     router.get("/", productController.getProducts);
+    router.get("/:id", productController.getProductId);
     authController.checkAdminPermission,
     router.put(
         "/:id",
@@ -17,5 +18,11 @@ router.post(
         authController.checkAdminPermission,
         productController.editProducts
     );
+    router.delete(
+    "/:id",
+    authController.authenticate,
+    authController.checkAdminPermission,
+    productController.deleteProduct
+);
 
 module.exports = router;
