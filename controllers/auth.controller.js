@@ -7,12 +7,12 @@ authController.authenticate = (req, res, next) => {
     try {
         const tokenString = req.headers.authorization;
         if (!tokenString) {
-            throw new Error("invalid token");
+            return res.status(401).json({ status: "fail", message: "로그인이 필요합니다" });
         }
         const token = tokenString.replace("Bearer ", "");
         jwt.verify(token, JWT_SECRET_KEY, (error, payload) => {
         if (error) {
-            throw new Error("invalid token");
+            return res.status(401).json({ status: "fail", message: "로그인이 필요합니다" });
         }
         req.userId = payload._id;
         next();

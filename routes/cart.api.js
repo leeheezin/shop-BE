@@ -5,5 +5,6 @@ const router = express.Router();
 
 router.post("/",authController.authenticate,cartController.addItemToCart)
 router.get("/",authController.authenticate,cartController.getItemCart)
-
+router.patch("/editQty",authController.authenticate,cartController.editItemQty)
+router.delete("/:productId",authController.authenticate, cartController.delItemCart)
 module.exports = router;
