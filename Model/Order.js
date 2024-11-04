@@ -8,6 +8,7 @@ const orderSchema = Schema({
     totalPrice:{type:Number,required:true,default:0},
     userId:{type: mongoose.ObjectId, ref:User},
     status:{type:String,default:"active"},
+    orderNum:{type:String},
     items:[{
         productId:{type:mongoose.ObjectId,ref:Product},
         size:{type:String,required:true},

@@ -58,9 +58,6 @@ cartController.addItemToCart = async (req, res) => {
         cart.items = cart.items.filter((item) => {
         const match =
             item.productId.toString() === productId && item.size === size;
-        console.log(
-            `아이템 검사 - ID: ${item.productId}, Size: ${item.size}, Match: ${match}`
-        );
         return !match;
         });
 
