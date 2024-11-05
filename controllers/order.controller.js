@@ -30,10 +30,54 @@ orderController.createOrder = async (req,res) => {
 
         await newOrder.save()
         //save후 카트 비워주기
-        
+
         res.status(200).json({status: 'success', orderNum: newOrder.orderNum})
     } catch (error) {
         return res.status(400).json({status:'fail',error: error.message})
     }
 }
+orderController.getOrder = async (req,res) => {
+    try {
+        const {userId} = req
+        const { ordernum } = req.query;
+        const query = { userId };
+        if (ordernum) {
+            query.orderNum = new RegExp(ordernum, "i");;  
+        }
+        const orderList = await Order.find(query).populate({
+            path: 'items.productId',
+            model: 'Product',
+            select: 'name price image status'
+        })
+        res.status(200).json({ status: 'success', orders: orderList });
+    } catch (error) {
+        res.status(400).json({ status: 'fail', error: error.message });
+    }
+}
+orderController.updateOrderStatus = async (req, res) => {
+    try {
+        const { id } = req.params; 
+        const { status } = req.body; 
+        //상태검증
+        const validStatuses = ["preparing", "shipping", "delivered", "refund"];
+        if (!validStatuses.includes(status)) {
+            return res.status(400).json({ status: "fail", message: "Invalid status" });
+        }
+        //상태업데이트
+        const updatedOrder = await Order.findByIdAndUpdate(
+            id,
+            { status },
+            { new: true }
+        );
+
+        if (!updatedOrder) {
+            return res.status(404).json({ status: "fail", message: "Order not found" });
+        }
+
+        res.status(200).json({ status: "success", order: updatedOrder });
+    } catch (error) {
+        res.status(500).json({ status: "fail", error: error.message });
+    }
+};
+
 module.exports = orderController
