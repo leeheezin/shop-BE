@@ -1,7 +1,8 @@
 const User = require("../model/User")
 const bcrypt = require('bcryptjs')
 const userController = {}
-
+const {OAuth2Client} = require('google-auth-library');
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID
 userController.createUser = async (req,res) =>{
     try {
         const {email, password, name, level} = req.body
@@ -30,6 +31,36 @@ userController.loginUser = async (req,res) => {
             }
         }
         throw new Error('이메일 또는 패스워드가 일치하지 않습니다.')
+    } catch (error) {
+        res.status(400).json({status: 'login fail', message: error.message})
+    }
+}
+userController.loginGoogle = async (req,res) => {
+    try {
+        //토근값 읽어와서 유저정보 뽑아내고 email
+        const {token} = req.body
+        const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID)
+        const ticket = await googleClient.verifyIdToken({
+            idToken: token,
+            audience: GOOGLE_CLIENT_ID
+        })
+        const {email,name} = ticket.getPayload()
+        console.log("eee",email,name)
+        //이미 로그인한적있는지?-> 로그인시키고 토큰주면 장땡
+        let user = await User.findOne({email})
+        if(!user){
+        //처음 로그인 시도-> 유저정보 먼저 생성->토큰값
+            const randomPassword = ""+Math.floor(Math.random()*1000000)
+            const salt = await bcrypt.genSalt(10)
+            const newPassword = await bcrypt.hash(randomPassword,salt)
+            user = new User({
+                name, email, password:newPassword
+            })
+            await user.save()
+        }
+        //토큰발행 리턴
+        const sessionToken = await user.generateToken()
+        res.status(200).json({status:"success", user, token:sessionToken})
     } catch (error) {
         res.status(400).json({status: 'login fail', message: error.message})
     }
