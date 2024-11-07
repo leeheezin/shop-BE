@@ -108,21 +108,17 @@ productController.createProduct = async (req, res) => {
     }
 };
 productController.checkStock = async (item) => {
-    //사려는 아이템 재고 정보 들고 오기
-    const product = await Product.findById(item.productId)
-    //사려는 아이템 수량,재고 비교
-    if(product.stock[item.size] < item.qty){
-    //재고가 불충분하면 불충분메시지와 함께 데이터 반환
-        return {isVerify:false, message: `${product.name}의 ${item.size}재고가 부족합니다.`}
+    // 사려는 아이템 재고 정보 들고 오기
+    const product = await Product.findById(item.productId);
+    // 사려는 아이템 수량, 재고 비교
+    if (product.stock[item.size] < item.qty) {
+        // 재고가 불충분하면 불충분 메시지와 함께 데이터 반환
+        return { isVerify: false, message: `${product.name}의 ${item.size} 재고가 부족합니다.` };
     }
-    //충분 하다면 재고에서 -qty 성공 
-    const newStock = {...product.stock}
-    newStock[item.size]-=item.qty
-    product.stock=newStock
-
-    await product.save()
-    return {isVerify:true}
+    // 충분하다면 확인 완료
+    return { isVerify: true };
 }
+
 productController.checkItemListStock = async (itemList) => {
     try {
         const insufficientStockItems = [] //재고 불충분한 아이템 저장

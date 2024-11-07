@@ -1,41 +1,56 @@
 const Order = require("../model/Order")
+const Product = require("../model/Product")
 const { randomStringGenerator } = require("../utils/randomStringGenerator")
 const productController = require("./product.controller")
 
 const orderController = {}
-orderController.createOrder = async (req,res) => {
+orderController.createOrder = async (req, res) => {
     try {
-        const {userId} = req
-        const {shipTo,contact,totalPrice,orderList} = req.body
+        const { userId } = req;
+        const { shipTo, contact, totalPrice, orderList } = req.body;
 
-        //재고확인, 재고업데이트 먼저
-        const insufficientStockItems = await productController.checkItemListStock(orderList)
+        // 재고 확인
+        const insufficientStockItems = await productController.checkItemListStock(orderList);
 
-        //재고가 충분하지 않는 아이템이 있다면 => 에러
-        if(insufficientStockItems.length > 0) {
-            const errorMessage = insufficientStockItems.reduce((total,item)=>total+=item.message,"")
+        // 재고가 충분하지 않은 아이템이 있다면 => 에러
+        if (insufficientStockItems.length > 0) {
+            const errorMessage = insufficientStockItems.reduce((total, item) => total += item.message, "");
             throw new Error(errorMessage);
-            
         }
+
         const contactString = `${contact.firstName} ${contact.lastName} (${contact.contact})`;
-        //재고 충분하면 오더 만들기
+        
+        // 재고 충분하면 오더 만들기
         const newOrder = new Order({
             userId,
             totalPrice,
             shipTo,
-            contact:contactString, //문자열로
+            contact: contactString, // 문자열로
             items: orderList,
             orderNum: randomStringGenerator()
-        })
+        });
 
-        await newOrder.save()
-        //save후 카트 비워주기
+        // 주문 저장
+        await newOrder.save();
 
-        res.status(200).json({status: 'success', orderNum: newOrder.orderNum})
+        // 재고 감소 로직 추가
+        await Promise.all(
+            orderList.map(async (item) => {
+                const product = await Product.findById(item.productId);
+                if (product) {
+                    product.stock[item.size] -= item.qty;
+                    await product.save();
+                }
+            })
+        );
+
+        // 주문 후 성공 응답
+        res.status(200).json({ status: 'success', orderNum: newOrder.orderNum });
     } catch (error) {
-        return res.status(400).json({status:'fail',error: error.message})
+        return res.status(400).json({ status: 'fail', error: error.message });
     }
 }
+
 orderController.getOrder = async (req,res) => {
     try {
         const {userId} = req
