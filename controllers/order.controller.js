@@ -51,24 +51,35 @@ orderController.createOrder = async (req, res) => {
     }
 }
 
-orderController.getOrder = async (req,res) => {
+orderController.getOrder = async (req, res) => {
     try {
-        const {userId} = req
-        const { ordernum } = req.query;
+        const { userId } = req;
+        const { ordernum, page = 1 } = req.query;
+        const PAGE_SIZE = 3; // 한 페이지에 보여줄 아이템 수
         const query = { userId };
+
         if (ordernum) {
-            query.orderNum = new RegExp(ordernum, "i");;  
+            query.orderNum = new RegExp(ordernum, "i");
         }
-        const orderList = await Order.find(query).populate({
-            path: 'items.productId',
-            model: 'Product',
-            select: 'name price image status'
-        })
-        res.status(200).json({ status: 'success', orders: orderList });
+
+        const totalOrders = await Order.countDocuments(query);
+        const totalPageNum = Math.ceil(totalOrders / PAGE_SIZE);
+
+        const orderList = await Order.find(query)
+            .populate({
+                path: 'items.productId',
+                model: 'Product',
+                select: 'name price image status',
+            })
+            .skip((page - 1) * PAGE_SIZE)
+            .limit(PAGE_SIZE);
+
+        res.status(200).json({ status: 'success', orders: orderList, totalPageNum });
     } catch (error) {
         res.status(400).json({ status: 'fail', error: error.message });
     }
-}
+};
+
 orderController.updateOrderStatus = async (req, res) => {
     try {
         const { id } = req.params; 
