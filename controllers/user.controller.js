@@ -37,7 +37,6 @@ userController.loginUser = async (req,res) => {
 }
 userController.loginGoogle = async (req,res) => {
     try {
-        //토근값 읽어와서 유저정보 뽑아내고 email
         const {token} = req.body
         const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID)
         const ticket = await googleClient.verifyIdToken({
@@ -46,10 +45,8 @@ userController.loginGoogle = async (req,res) => {
         })
         const {email,name} = ticket.getPayload()
         console.log("eee",email,name)
-        //이미 로그인한적있는지?-> 로그인시키고 토큰주면 장땡
         let user = await User.findOne({email})
         if(!user){
-        //처음 로그인 시도-> 유저정보 먼저 생성->토큰값
             const randomPassword = ""+Math.floor(Math.random()*1000000)
             const salt = await bcrypt.genSalt(10)
             const newPassword = await bcrypt.hash(randomPassword,salt)
@@ -58,7 +55,6 @@ userController.loginGoogle = async (req,res) => {
             })
             await user.save()
         }
-        //토큰발행 리턴
         const sessionToken = await user.generateToken()
         res.status(200).json({status:"success", user, token:sessionToken})
     } catch (error) {

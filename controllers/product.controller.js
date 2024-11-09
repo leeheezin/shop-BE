@@ -34,19 +34,16 @@ productController.createProduct = async (req, res) => {
     productController.getProducts = async (req, res) => {
     try {
         const { page, name, pageSize } = req.query;
-        const PAGE_SIZE = parseInt(pageSize) || 3; //설정안하면 3개만 보여주기
+        const PAGE_SIZE = parseInt(pageSize) || 3; 
 
         const cond = {
-        isDeleted: { $ne: true }, // 삭제되지 않은 상품만 조회
+        isDeleted: { $ne: true },
         ...(name ? { name: { $regex: name, $options: "i" } } : {}),
         };
         let query = Product.find(cond).sort({ createdAt: -1 });
         if (page) {
         query.skip((page - 1) * PAGE_SIZE).limit(PAGE_SIZE);
-        //최종 몇개 페이지
-        //데이터가 총 몇개 있는지
         const totalItemNum = await Product.countDocuments(cond);
-        //데이터 총 개수/ PAGE_SIZE
         const totalPageNum = Math.ceil(totalItemNum / PAGE_SIZE);
         response.totalPageNum = totalPageNum;
         }
@@ -108,20 +105,16 @@ productController.createProduct = async (req, res) => {
     }
 };
 productController.checkStock = async (item) => {
-    // 사려는 아이템 재고 정보 들고 오기
     const product = await Product.findById(item.productId);
-    // 사려는 아이템 수량, 재고 비교
     if (product.stock[item.size] < item.qty) {
-        // 재고가 불충분하면 불충분 메시지와 함께 데이터 반환
         return { isVerify: false, message: `${product.name}의 ${item.size} 재고가 부족합니다.` };
     }
-    // 충분하다면 확인 완료
     return { isVerify: true };
 }
 
 productController.checkItemListStock = async (itemList) => {
     try {
-        const insufficientStockItems = [] //재고 불충분한 아이템 저장
+        const insufficientStockItems = [] 
         //재고 확인
         await Promise.all(
             itemList.map(async (item)=>{
